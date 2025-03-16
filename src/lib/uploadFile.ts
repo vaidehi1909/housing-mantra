@@ -9,10 +9,10 @@ interface FileData {
 
 // Configure S3 client
 const s3Client: S3Client = new S3Client({
-  region: process.env.AWS_REGION ?? "",
+  region: process.env.S3_AWS_REGION ?? "",
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
+    accessKeyId: process.env.S3_AWS_ACCESS_KEY_ID ?? "",
+    secretAccessKey: process.env.S3_AWS_SECRET_ACCESS_KEY ?? "",
   },
 });
 
@@ -41,7 +41,7 @@ export async function uploadBase64ToS3(
     });
 
     await upload.done();
-    return `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`; // Construct the URL manually
+    return `https://${bucketName}.s3.${process.env.S3_AWS_REGION}.amazonaws.com/${s3Key}`; // Construct the URL manually
   } catch (error) {
     console.error("Error uploading to S3:", error);
     throw error;
@@ -50,7 +50,7 @@ export async function uploadBase64ToS3(
 
 export async function uploadFile(imageBody: FileData): Promise<string> {
   const { fileData, fileType } = imageBody;
-  const bucketName = process.env.AWS_S3_BUCKET ?? "";
+  const bucketName = process.env.S3_AWS_BUCKET ?? "";
   const extension = fileType.split("/")[1] || "jpg";
   const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
   const s3Key = `uploads/${uniqueSuffix}.${extension}`;
