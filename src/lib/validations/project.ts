@@ -1,5 +1,4 @@
 import * as z from "zod";
-import { amenitiesList } from "@/components/AmenitiesSelection";
 
 export const projectFormSchema = z.object({
   title: z

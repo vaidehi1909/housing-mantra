@@ -3,7 +3,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import MapPicker from "./MapPicker";
 import { Map } from "lucide-react";
 import {
   Dialog,
@@ -12,7 +11,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { strict } from "assert";
+
+import dynamic from "next/dynamic";
+const MapPicker = dynamic(() => import("./MapPicker"), {
+  ssr: false,
+});
 
 interface MapCoordinatesProps {
   latitude: string;
@@ -27,29 +30,24 @@ export function MapCoordinates({
   onLatitudeChange,
   onLongitudeChange,
 }: MapCoordinatesProps) {
+  const [isClient, setIsClient] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [tempLatitude, setTempLatitude] = useState(latitude);
   const [tempLongitude, setTempLongitude] = useState(longitude);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null; // Or a placeholder
+  }
 
   const handleSave = (lat: string, long: string) => {
     onLatitudeChange(lat);
     onLongitudeChange(long);
     setIsOpen(false);
   };
-
-  //   const getCurrentLocation = () => {
-  //     if (navigator.geolocation) {
-  //       navigator.geolocation.getCurrentPosition(
-  //         (position) => {
-  //           onLatitudeChange(position.coords.latitude.toString());
-  //           onLongitudeChange(position.coords.longitude.toString());
-  //         },
-  //         (error) => {
-  //           console.error("Error getting location:", error);
-  //         }
-  //       );
-  //     }
-  //   };
 
   return (
     <div className="space-y-4">

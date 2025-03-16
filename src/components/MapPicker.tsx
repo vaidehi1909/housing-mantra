@@ -49,18 +49,19 @@ export default function MapPicker({
   onLongitudeChange,
   onSave,
 }: MapPickerProps) {
-  const [position, setPosition] = useState<L.LatLng>(
-    L.latLng(
-      parseFloat(latitude || "18.5204") || 18.5204,
-      parseFloat(longitude || "73.8567") || 73.8567
-    )
-  );
+    const [position, setPosition] = useState<L.LatLng>(
+      L.latLng(
+        parseFloat(latitude || "18.5204") || 18.5204,
+        parseFloat(longitude || "73.8567") || 73.8567
+      )
+    );
 
   const handleSave = () => {
     onLatitudeChange?.(position.lat.toString());
     onLongitudeChange?.(position.lng.toString());
     onSave?.(position.lat.toString(), position.lng.toString());
   };
+
 
   return (
     <div className="space-y-4">

@@ -2,7 +2,6 @@
 
 import { prisma } from "@/lib/prisma";
 import { ImageWithMeta } from "@/components/MultiImageUpload";
-import { projectFormSchema } from "@/lib/validations/project";
 import { revalidatePath } from "next/cache";
 import { uploadFile } from "@/lib/uploadFile";
 import path from "path";
@@ -52,7 +51,7 @@ export async function createProject(formData: FormData) {
     const processedImages = await processImages(images);
 
     // Create the project with images as JSON string
-    const project = await prisma.project.create({
+    await prisma.project.create({
       data: {
         title: data.title as string,
         description: data.description as string,

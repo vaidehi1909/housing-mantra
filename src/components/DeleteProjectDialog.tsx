@@ -61,7 +61,7 @@ export default function DeleteProjectDialog({
         <DialogHeader>
           <DialogTitle>Delete Project</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete the project "{projectName}"? This
+            Are you sure you want to delete the project {projectName}? This
             action cannot be undone.
           </DialogDescription>
         </DialogHeader>

@@ -26,15 +26,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
+import { Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import type { Project } from "@/types";
 import DeleteProjectDialog from "@/components/DeleteProjectDialog";
-
-interface ProjectImage {
-  url: string;
-  description: string | null;
-  isPrimary: boolean;
-}
 
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,21 +62,6 @@ export default function ProjectsPage() {
   const filteredProjects = projects.filter((project) =>
     project.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const getProjectImages = (project: Project): ProjectImage[] => {
-    if (!project.images) return [];
-    try {
-      return JSON.parse(project.images);
-    } catch {
-      return [];
-    }
-  };
-
-  const getPrimaryImage = (project: Project): string | null => {
-    const images = getProjectImages(project);
-    const primaryImage = images.find((img) => img.isPrimary);
-    return primaryImage?.url || images[0]?.url || null;
-  };
 
   if (isLoading) {
     return (
