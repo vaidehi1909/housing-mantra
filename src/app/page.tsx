@@ -7,7 +7,7 @@ export default function Home() {
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">Housing Mantra Admin</h1>
         <p className="mb-8">Real Estate Property Management Dashboard</p>
-        <Link href="/dashboard">
+        <Link href="/projects">
           <Button>Go to Dashboard</Button>
         </Link>
       </div>

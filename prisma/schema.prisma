@@ -6,27 +6,27 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql" // Changed to PostgreSQL
+  url      = env("DATABASE_URL") // Use environment variable for connection string
 }
 
 model Project {
-  id              String         @id @default(cuid())
+  id              String    @id @default(cuid())
   title           String
   description     String
   location        String
   price           String
   propertyType    String
-  status          String        @default("Active")
-  amenities       String        // JSON string of amenities
-  isReraRegistered Boolean      @default(false)
-  reraNumbers     String?        // JSON string of RERA numbers
+  status          String    @default("Active")
+  amenities       String    // JSON string of amenities
+  isReraRegistered Boolean   @default(false)
+  reraNumbers     String?   // JSON string of RERA numbers
   landmark        String?
   landmarkDistance String?
   latitude        String?
   longitude       String?
-  otherUrls       String?        // JSON array
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  images          String?    // JSON string of RERA numbers
+  otherUrls       String?   // JSON array
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  images          String?   // JSON string of image URLs
 }
