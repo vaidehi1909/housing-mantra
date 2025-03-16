@@ -19,11 +19,11 @@ async function processImages(
   const uploadPromises = images.map(async (img) => {
     let url = img.url || img.previewUrl;
 
-    if (img.fileData && img.fileType) {
+    if (img.file) {
+      // Changed this line, now we check for file.
       url = await uploadFile({
-        fileData: img.fileData,
-        fileType: img.fileType,
-        originalName: img.file?.name || "image",
+        file: img.file, // changed to only pass the file
+        originalName: img.file.name,
       });
     }
 
@@ -38,15 +38,84 @@ async function processImages(
   return resolvedImages;
 }
 
+function getIndexFromImageString(str: string) {
+  const regex = /\[(\d+)\]/; // Matches [number]
+  const match = str.match(regex);
+  if (match && match[1]) {
+    return parseInt(match[1], 10);
+  }
+  return null;
+}
+
+function getImageFormData(data: FormData): ImageWithMeta[] {
+  const newImages: ImageWithMeta[] = [];
+  const existingImages: ImageWithMeta[] = [];
+
+  // Separate new and existing images
+  const formKeys = Array.from(data.keys());
+  for (const key of formKeys) {
+    if (key.startsWith("newImages[")) {
+      const index = getIndexFromImageString(key);
+      if (index == null) continue;
+      if (!newImages[index]) {
+        newImages[index] = {
+          previewUrl: "",
+          isPrimary: false,
+          description: "",
+        };
+      }
+      if (key.endsWith("[description]")) {
+        newImages[index].description = data.get(key) as string;
+      } else if (key.endsWith("[isPrimary]")) {
+        newImages[index].isPrimary = data.get(key) === "true";
+      }
+    } else if (key.startsWith("existingImages[")) {
+      const index = getIndexFromImageString(key);
+      if (index == null) continue;
+      if (!existingImages[index]) {
+        existingImages[index] = {
+          previewUrl: "",
+          isPrimary: false,
+          description: "",
+          url: "",
+        };
+      }
+      if (key.endsWith("[description]")) {
+        existingImages[index].description = data.get(key) as string;
+      } else if (key.endsWith("[isPrimary]")) {
+        existingImages[index].isPrimary = data.get(key) === "true";
+      } else if (key.endsWith("[url]")) {
+        existingImages[index].url = data.get(key) as string;
+      }
+    }
+  }
+
+  // Handle uploaded files
+  const fileKeys = formKeys.filter(
+    (key) =>
+      key.startsWith("newImages[") &&
+      !key.endsWith("[description]") &&
+      !key.endsWith("[isPrimary]")
+  );
+  for (const key of fileKeys) {
+    const index = getIndexFromImageString(key);
+    if (index == null) continue;
+    newImages[index].file = data.get(key) as File;
+  }
+
+  return [...existingImages, ...newImages];
+}
+
 export async function createProject(formData: FormData) {
   try {
     // Parse the form data
     const data = Object.fromEntries(formData.entries());
-    const images = JSON.parse(data.images as string) as ImageWithMeta[];
-    const otherUrls = JSON.parse(data.otherUrls as string);
+
+    const allImages = getImageFormData(formData);
 
     // Process and upload images
-    const processedImages = await processImages(images);
+    const processedImages = await processImages(allImages);
+    const otherUrls = JSON.parse(data.otherUrls as string);
 
     // Create the project with images as JSON string
     await prisma.project.create({
@@ -82,7 +151,7 @@ export async function createProject(formData: FormData) {
 export async function updateProject(projectId: string, formData: FormData) {
   try {
     const data = Object.fromEntries(formData.entries());
-    const images = JSON.parse(data.images as string) as ImageWithMeta[];
+    const images = getImageFormData(formData);
     const otherUrls = JSON.parse(data.otherUrls as string);
 
     // Process and upload images

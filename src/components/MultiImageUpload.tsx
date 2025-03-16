@@ -17,6 +17,7 @@ export interface ImageWithMeta {
   fileData?: string; // base64 string
   fileType?: string; // mime type
   url?: string;
+  isNew?: boolean;
   previewUrl: string;
   isPrimary: boolean;
   description: string;
@@ -40,14 +41,14 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     onImagesChange?.(images);
   }, [images, onImagesChange]);
 
-  const convertFileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
+  //   const convertFileToBase64 = (file: File): Promise<string> => {
+  //     return new Promise((resolve, reject) => {
+  //       const reader = new FileReader();
+  //       reader.onload = () => resolve(reader.result as string);
+  //       reader.onerror = reject;
+  //       reader.readAsDataURL(file);
+  //     });
+  //   };
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -60,11 +61,11 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     const newImages: ImageWithMeta[] = await Promise.all(
       files.map(async (file) => ({
         file,
-        fileData: await convertFileToBase64(file),
         fileType: file.type,
         previewUrl: URL.createObjectURL(file),
         isPrimary: false,
         description: "",
+        isNew: true,
       }))
     );
     setImages((prevImages) => [...prevImages, ...newImages]);
@@ -113,7 +114,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     setImages((prevImages) =>
       prevImages.map((img) => ({
         ...img,
-        isPrimary: img.previewUrl === previewUrl,
+        isPrimary: img.previewUrl === previewUrl && !img.isPrimary,
       }))
     );
     setPrimaryImage(previewUrl);
@@ -151,11 +152,11 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {images.map((image) => (
           <div
-            key={image.previewUrl || image.url}
+            key={image.previewUrl}
             className="relative border rounded-lg p-2 shadow-sm"
           >
             <img
-              src={image.previewUrl || image.url}
+              src={image.previewUrl}
               alt={image.description || "Project image"}
               className="w-full h-32 object-cover rounded-md"
             />

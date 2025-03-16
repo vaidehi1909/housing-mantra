@@ -67,7 +67,11 @@ export default function ProjectForm({
 }: ProjectFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<ImageWithMeta[]>(
-    initialData?.images ? JSON.parse(initialData.images) : []
+    initialData?.images
+      ? JSON.parse(initialData.images)?.map((img: ImageWithMeta) => {
+          return { ...img, previewUrl: img.url };
+        })
+      : []
   );
   const [otherUrls, setOtherUrls] = useState<string[]>(
     initialData?.otherUrls ? JSON.parse(initialData.otherUrls) : []
@@ -129,8 +133,34 @@ export default function ProjectForm({
         }
       });
 
-      const allImages = [...images];
-      formData.append("images", JSON.stringify(allImages));
+      //   const allImages = [...images];
+      const imagesToUpload = images.filter((img) => img.isNew);
+      const existingImages = images.filter((img) => !img.isNew);
+
+      imagesToUpload.forEach((img, index) => {
+        if (img.file) {
+          formData.append(`newImages[${index}]`, img.file);
+          formData.append(`newImages[${index}][description]`, img.description);
+          formData.append(
+            `newImages[${index}][isPrimary]`,
+            String(img.isPrimary)
+          );
+        }
+      });
+
+      existingImages.forEach((img, index) => {
+        formData.append(`existingImages[${index}][url]`, img.url || "");
+        formData.append(
+          `existingImages[${index}][description]`,
+          img.description
+        );
+        formData.append(
+          `existingImages[${index}][isPrimary]`,
+          String(img.isPrimary)
+        );
+      });
+
+      //   formData.append("images", JSON.stringify(allImages));
       formData.append("otherUrls", JSON.stringify(otherUrls.filter(Boolean)));
 
       await onSubmit(formData);

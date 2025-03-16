@@ -1,9 +1,10 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 
 interface FileData {
-  fileData: string; // base64 string
-  fileType: string;
+  file: File;
+  fileData?: string; // base64 string
+  fileType?: string;
   originalName: string;
 }
 
@@ -49,12 +50,29 @@ export async function uploadBase64ToS3(
 }
 
 export async function uploadFile(imageBody: FileData): Promise<string> {
-  const { fileData, fileType } = imageBody;
+  const { file } = imageBody;
   const bucketName = process.env.S3_AWS_BUCKET ?? "";
-  const extension = fileType.split("/")[1] || "jpg";
-  const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-  const s3Key = `uploads/${uniqueSuffix}.${extension}`;
 
-  const s3Url = await uploadBase64ToS3(fileData, bucketName, s3Key);
-  return s3Url;
+  try {
+    const fileBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(fileBuffer);
+    const fileType = file.type;
+    const extension = fileType.split("/")[1] || "jpg";
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const s3Key = `uploads/${uniqueSuffix}.${extension}`;
+
+    const params = {
+      Bucket: bucketName,
+      Key: s3Key,
+      Body: buffer,
+      ContentType: fileType,
+    };
+
+    await s3Client.send(new PutObjectCommand(params));
+
+    return `https://${bucketName}.s3.${process.env.S3_AWS_REGION}.amazonaws.com/${s3Key}`;
+  } catch (error) {
+    console.error("Error uploading to S3:", error);
+    throw error;
+  }
 }
