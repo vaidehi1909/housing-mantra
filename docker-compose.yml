@@ -9,10 +9,23 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - sqlite_data:/app/prisma
     environment:
       - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:password@db:5432/mydb?schema=public # Important change!
+    depends_on:
+      - db
     command: sh -c "npx prisma migrate dev && npx prisma db seed && npm run dev"
 
+  db:
+    image: postgres:15 # or another postgres version
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432" # only if you want to access from host, not recommended production.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
-  sqlite_data: 
+  postgres_data:
