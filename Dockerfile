@@ -25,7 +25,8 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -51,13 +52,13 @@ RUN chown -R nextjs:nodejs /app/prisma
 
 # Install only production dependencies
 RUN npm install --production
-RUN npx prisma generate
+# RUN npx prisma generate
 
 USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"] 

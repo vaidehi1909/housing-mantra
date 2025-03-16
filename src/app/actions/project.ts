@@ -16,12 +16,9 @@ interface ProcessedImage {
 async function processImages(
   images: ImageWithMeta[]
 ): Promise<ProcessedImage[]> {
-  const processedImages: ProcessedImage[] = [];
-
-  for (const img of images) {
+  const uploadPromises = images.map(async (img) => {
     let url = img.url || img.previewUrl;
 
-    // If there's file data, upload it and get the new URL
     if (img.fileData && img.fileType) {
       url = await uploadFile({
         fileData: img.fileData,
@@ -30,14 +27,15 @@ async function processImages(
       });
     }
 
-    processedImages.push({
+    return {
       url,
       description: img.description,
       isPrimary: img.isPrimary,
-    });
-  }
+    };
+  });
 
-  return processedImages;
+  const resolvedImages: ProcessedImage[] = await Promise.all(uploadPromises);
+  return resolvedImages;
 }
 
 export async function createProject(formData: FormData) {
